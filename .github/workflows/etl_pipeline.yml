@@ -1,0 +1,48 @@
+name: ETL Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  etl-pipeline:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run ETL Pipeline
+        run: |
+          python src/pipeline.py
+
+      - name: Run PySpark Processing
+        run: |
+          python src/spark_processing.py
+
+      - name: Upload ETL Outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: etl-output
+          path: data/processed/
