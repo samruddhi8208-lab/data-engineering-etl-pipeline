@@ -1,5 +1,9 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, sum
+import os
+
+
+OUTPUT_DIR = "data/processed"
 
 
 def create_spark_session():
@@ -12,6 +16,9 @@ def create_spark_session():
 
 
 def process_data(spark):
+
+    # Create output folder
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     employees = (
         spark.read
@@ -47,6 +54,19 @@ def process_data(spark):
     )
 
     department_summary.show()
+
+    # Save Spark output
+    output_path = os.path.join(
+        OUTPUT_DIR,
+        "spark_department_summary"
+    )
+
+    department_summary.coalesce(1).write \
+        .mode("overwrite") \
+        .option("header", True) \
+        .csv(output_path)
+
+    print(f"Spark output saved to: {output_path}")
 
     return department_summary
 
